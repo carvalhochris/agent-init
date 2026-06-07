@@ -3,7 +3,8 @@
     {
       "name": "qa-local",
       "description": "QA steps for testing agent-init locally",
-      "path": "skills/qa-local/skill.md"
+      "path": "skills/qa-local/skill.md",
+      "triggers": ["qa-local", "qa", "test", "run tests"]
     }
   ]
 }
