@@ -12,12 +12,16 @@ Use this skill when the user wants QA steps for testing agent-init locally.
 
 When user invokes "qa-local", load this skill and run the QA workflow using inquirer for multiple choice.
 
+### Pre-commit (automatic)
+Before any commit, tests run automatically via husky pre-commit hook. No build needed - vitest handles TypeScript directly.
+
 ### QA Steps (One at a time)
 
-**Step 1: Build and Link**
+**Step 1: Build and Link (manual verification)**
 ```bash
 npm run build && npm link
 ```
+This is for manual QA verification - not required for tests to pass.
 
 **Step 2: Create New Project**
 ```bash
@@ -90,4 +94,4 @@ rm -rf /tmp/test-agent-project /tmp/my-agent-project /tmp/project-with-desc
 
 ## Skill Activation
 
-This skill activates when user types "qa-local" or asks for QA steps. It should be discoverable via `.agents/skills.json`.
+This skill activates when user types "qa-local" or asks for QA steps. It should be discoverable via `skills/index.json`.
