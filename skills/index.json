@@ -5,6 +5,18 @@
       "description": "QA steps for testing agent-init locally",
       "path": "qa-local/skill.md",
       "triggers": ["qa-local", "qa", "test", "run tests"]
+    },
+    {
+      "name": "help",
+      "description": "Guide for working with this agent-powered project",
+      "path": "help/skill.md",
+      "triggers": ["help", "guide", "onboarding", "how do I use this"]
+    },
+    {
+      "name": "conventions",
+      "description": "Coding and collaboration conventions",
+      "path": "conventions/skill.md",
+      "triggers": ["conventions", "standards", "best practices", "coding rules"]
     }
   ]
 }

@@ -55,9 +55,22 @@ project/
 │   ├── config/         # Agent configuration files
 │   └── prompts/        # Agent prompt templates
 └── skills/             # Reusable skills for this project
+    └── index.json      # Skill registry
 ```
 
 This structure is harness-agnostic and ensures any AI coding tool can understand and work with the project effectively.
+
+## Basic Skills
+
+Every agent-init project comes with universal skills:
+
+| Skill | Purpose | Triggers |
+|-------|---------|----------|
+| help | Project onboarding guide | help, guide, onboarding |
+| qa-local | Local QA testing steps | qa-local, qa, test |
+| conventions | Coding and collaboration standards | conventions, standards |
+
+Skills are harness-agnostic and work with opencode, codex, and claude code.
 
 ---
 
