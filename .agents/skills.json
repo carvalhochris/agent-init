@@ -1,0 +1,9 @@
+{
+  "skills": [
+    {
+      "name": "qa-local",
+      "description": "QA steps for testing agent-init locally",
+      "path": "skills/qa-local/skill.md"
+    }
+  ]
+}
