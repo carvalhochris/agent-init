@@ -11,9 +11,9 @@ const __dirname = path.dirname(__filename);
 
 interface ProjectInfo {
   projectName: string;
-  description: string;
+  projectPath: string;
+  projectAbout: string;
   author: string;
-  agentPurpose: string;
 }
 
 async function welcome(): Promise<void> {
@@ -26,41 +26,64 @@ async function welcome(): Promise<void> {
 }
 
 async function gatherInfo(): Promise<ProjectInfo> {
-  const projectName = path.basename(process.cwd());
-
-  const answers = await inquirer.prompt<ProjectInfo>([
+  const initial = await inquirer.prompt<{ projectName: string }>([
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: projectName,
-      validate: (input: string) => input.length > 0 || 'Project name is required'
-    },
+      default: 'my-agent-project',
+      validate: (input: string) => {
+        if (!input.trim()) return 'Project name is required';
+        if (/[<>:"/\\|?*]/.test(input)) return 'Invalid characters in project name';
+        return true;
+      }
+    }
+  ]);
+
+  const projectPath = path.resolve(process.cwd(), initial.projectName);
+
+  if (await fs.pathExists(projectPath)) {
+    const { overwrite } = await inquirer.prompt<{ overwrite: boolean }>([
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Directory "${initial.projectName}" already exists. Continue?`,
+        default: false
+      }
+    ]);
+    if (!overwrite) {
+      console.log(chalk.yellow('Aborted.'));
+      process.exit(0);
+    }
+  } else {
+    await fs.ensureDir(projectPath);
+  }
+
+  const answers = await inquirer.prompt<Omit<ProjectInfo, 'projectName' | 'projectPath'>>([
     {
       type: 'input',
-      name: 'description',
-      message: 'Project description:',
-      default: 'An agent-powered project'
+      name: 'projectAbout',
+      message: 'What is this project about? (optional)',
+      default: ''
     },
     {
       type: 'input',
       name: 'author',
       message: 'Author name:',
       default: process.env.USER || 'Anonymous'
-    },
-    {
-      type: 'input',
-      name: 'agentPurpose',
-      message: 'What is the primary purpose of your agent?',
-      default: 'Assist with development tasks'
     }
   ]);
 
-  return answers;
+  return {
+    projectName: initial.projectName,
+    projectPath,
+    projectAbout: answers.projectAbout || 'General purpose agent-ready project',
+    author: answers.author
+  };
 }
 
 async function createFiles(data: ProjectInfo): Promise<void> {
-  const projectDir = process.cwd();
+  const projectDir = data.projectPath;
 
   console.log(chalk.cyan('\n📁 Creating project structure...\n'));
 
@@ -72,11 +95,11 @@ async function createFiles(data: ProjectInfo): Promise<void> {
     path.join(projectDir, 'README.md'),
     `# ${data.projectName}
 
-${data.description}
+${data.projectAbout}
 
 ## Overview
 
-This is an agent-powered repository. The agents in this project are configured to help with ${data.agentPurpose}.
+This is an agent-powered repository. The agents in this project are configured to help with ${data.projectAbout}.
 
 ## Agents
 
@@ -107,7 +130,7 @@ This document defines the agents configured for this project.
 
 ## Primary Agent
 
-**Purpose**: ${data.agentPurpose}
+**Purpose**: ${data.projectAbout}
 
 ### Capabilities
 
@@ -151,7 +174,7 @@ A log of work completed by agents in this project.
 ### Initialized
 
 - Project initialized with agent-init
-- Primary agent configured for: ${data.agentPurpose}
+- Primary agent configured for: ${data.projectAbout}
 
 ---
 
@@ -161,7 +184,7 @@ A log of work completed by agents in this project.
 
   const agentConfig = {
     name: 'primary',
-    purpose: data.agentPurpose,
+    purpose: data.projectAbout,
     created: new Date().toISOString(),
     settings: {
       model: 'default',
@@ -179,7 +202,7 @@ A log of work completed by agents in this project.
     path.join(projectDir, '.agents/prompts/system.md'),
     `# System Prompt
 
-You are a helpful AI agent assisting with: ${data.agentPurpose}
+You are a helpful AI agent assisting with: ${data.projectAbout}
 
 ## Guidelines
 
@@ -206,11 +229,9 @@ You are a helpful AI agent assisting with: ${data.agentPurpose}
   );
 }
 
-async function showSummary(): Promise<void> {
-  const projectDir = process.cwd();
-  const files = await fs.readdir(projectDir);
+async function showSummary(projectPath: string, projectName: string): Promise<void> {
+  const files = await fs.readdir(projectPath);
   const mdFiles = files.filter(f => f.endsWith('.md'));
-  const agentFiles = await fs.readdir(path.join(projectDir, '.agents'), { recursive: true });
 
   console.log(chalk.green(`
 ╔═══════════════════════════════════════════════════════╗
@@ -218,21 +239,23 @@ async function showSummary(): Promise<void> {
 ╚═══════════════════════════════════════════════════════╝
   `));
 
+  console.log(chalk.cyan(`Project created at: ${projectPath}\n`));
   console.log(chalk.cyan('Files created:\n'));
   console.log(chalk.white('  📄 ' + mdFiles.join('\n  📄 ')));
   console.log(chalk.white('  📁 .agents/\n'));
 
   console.log(chalk.yellow('Next steps:\n'));
-  console.log(chalk.white(`  1. Review agents.md to understand your agents`));
-  console.log(chalk.white(`  2. Check worklog.md for current status`));
-  console.log(chalk.white(`  3. Customize .agents/prompts/system.md\n`));
+  console.log(chalk.white(`  1. cd ${projectName}`));
+  console.log(chalk.white(`  2. Review agents.md to understand your agents`));
+  console.log(chalk.white(`  3. Check worklog.md for current status`));
+  console.log(chalk.white(`  4. Customize .agents/prompts/system.md\n`));
 }
 
 export async function init(): Promise<void> {
   await welcome();
   const info = await gatherInfo();
   await createFiles(info);
-  await showSummary();
+  await showSummary(info.projectPath, info.projectName);
 }
 
 init().catch(console.error);
