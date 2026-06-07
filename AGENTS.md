@@ -23,7 +23,8 @@ This document defines the agents configured for developing agent-init.
 
 - All agent prompts are stored in `.agents/prompts/`
 - Agent configurations are in `.agents/config/`
-- Skills are defined in `.agents/skills/<skill-name>/skill.md`
+- Skills are defined in `skills/<skill-name>/skill.md`
+- Skills are registered in `skills/index.json`
 - Agent work is logged in `worklog.md`
 - Changes are committed to GitHub regularly
 
