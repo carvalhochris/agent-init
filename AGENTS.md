@@ -40,6 +40,7 @@ All harnesses share the same universal structure defined below.
 - Skills are defined in `skills/<skill-name>/skill.md`
 - Skills are registered in `skills/index.json`
 - Agent work is logged in `worklog.md`
+- **Always write tests for new features**
 - Changes are committed to GitHub regularly
 
 ## Universal Project Structure
