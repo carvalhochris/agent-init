@@ -2,6 +2,12 @@
 
 This document defines the agents configured for developing agent-init.
 
+## Value Proposition
+
+agent-init provides a universal framework for starting any project with agents pre-configured. Users choose their preferred harness—opencode, codex, claude code—and get the same opinionated setup out the gate.
+
+**Goal**: One command to rule them all. A consistent agent-ready project structure that works regardless of which AI coding harness you use.
+
 ## Primary Agent
 
 **Purpose**: Help build and maintain the agent-init CLI tool
@@ -19,6 +25,14 @@ This document defines the agents configured for developing agent-init.
 - Node.js CLI development
 - Interactive CLI with Inquirer
 
+## Supported Harnesses
+
+- **opencode**: Configured via `opencode.json`
+- **codex**: Compatible with standard agent conventions
+- **claude code**: Compatible with standard agent conventions
+
+All harnesses share the same universal structure defined below.
+
 ## Conventions
 
 - All agent prompts are stored in `.agents/prompts/`
@@ -27,6 +41,23 @@ This document defines the agents configured for developing agent-init.
 - Skills are registered in `skills/index.json`
 - Agent work is logged in `worklog.md`
 - Changes are committed to GitHub regularly
+
+## Universal Project Structure
+
+Every project initialized with agent-init includes:
+
+```
+project/
+├── AGENTS.md           # Agent definitions and capabilities
+├── worklog.md          # Log of work completed
+├── README.md           # Project documentation
+├── .agents/
+│   ├── config/         # Agent configuration files
+│   └── prompts/        # Agent prompt templates
+└── skills/             # Reusable skills for this project
+```
+
+This structure is harness-agnostic and ensures any AI coding tool can understand and work with the project effectively.
 
 ---
 
