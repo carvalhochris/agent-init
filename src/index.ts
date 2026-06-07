@@ -82,7 +82,7 @@ async function gatherInfo(): Promise<ProjectInfo> {
   };
 }
 
-async function createFiles(data: ProjectInfo): Promise<void> {
+export async function createFiles(data: ProjectInfo): Promise<void> {
   const projectDir = data.projectPath;
 
   console.log(chalk.cyan('\n📁 Creating project structure...\n'));

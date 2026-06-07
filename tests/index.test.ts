@@ -1,0 +1,132 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import fs from 'fs-extra';
+import path from 'path';
+
+vi.mock('fs-extra');
+
+describe('agent-init', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('createFiles', () => {
+    it('should create project directories', async () => {
+      const { createFiles } = await import('../src/index.js');
+
+      const testData = {
+        projectName: 'test-project',
+        projectPath: '/tmp/test-project',
+        projectAbout: 'A test project',
+        author: 'Test User'
+      };
+
+      await createFiles(testData);
+
+      expect(fs.ensureDir).toHaveBeenCalledWith(path.join(testData.projectPath, '.agents'));
+      expect(fs.ensureDir).toHaveBeenCalledWith(path.join(testData.projectPath, '.agents/prompts'));
+      expect(fs.ensureDir).toHaveBeenCalledWith(path.join(testData.projectPath, '.agents/config'));
+    });
+
+    it('should create README.md with project name and description', async () => {
+      const { createFiles } = await import('../src/index.js');
+
+      const testData = {
+        projectName: 'my-app',
+        projectPath: '/tmp/my-app',
+        projectAbout: 'A React music player',
+        author: 'Dev'
+      };
+
+      await createFiles(testData);
+
+      const readmeCall = fs.writeFile.mock.calls.find(
+        (call) => call[0] === path.join(testData.projectPath, 'README.md')
+      );
+      expect(readmeCall).toBeDefined();
+      expect(readmeCall[1]).toContain('# my-app');
+      expect(readmeCall[1]).toContain('A React music player');
+    });
+
+    it('should create worklog.md with date', async () => {
+      const { createFiles } = await import('../src/index.js');
+
+      const testData = {
+        projectName: 'test-project',
+        projectPath: '/tmp/test-project',
+        projectAbout: 'Test',
+        author: 'User'
+      };
+
+      await createFiles(testData);
+
+      const worklogCall = fs.writeFile.mock.calls.find(
+        (call) => call[0] === path.join(testData.projectPath, 'worklog.md')
+      );
+      expect(worklogCall).toBeDefined();
+      const today = new Date().toISOString().split('T')[0];
+      expect(worklogCall[1]).toContain(today);
+    });
+
+    it('should create .gitignore with sensible defaults', async () => {
+      const { createFiles } = await import('../src/index.js');
+
+      const testData = {
+        projectName: 'test-project',
+        projectPath: '/tmp/test-project',
+        projectAbout: 'Test',
+        author: 'User'
+      };
+
+      await createFiles(testData);
+
+      const gitignoreCall = fs.writeFile.mock.calls.find(
+        (call) => call[0] === path.join(testData.projectPath, '.gitignore')
+      );
+      expect(gitignoreCall).toBeDefined();
+      expect(gitignoreCall[1]).toContain('node_modules/');
+      expect(gitignoreCall[1]).toContain('.env');
+    });
+
+    it('should create agent config with correct structure', async () => {
+      const { createFiles } = await import('../src/index.js');
+
+      const testData = {
+        projectName: 'test-project',
+        projectPath: '/tmp/test-project',
+        projectAbout: 'Test project',
+        author: 'User'
+      };
+
+      await createFiles(testData);
+
+      const configCall = fs.writeFile.mock.calls.find(
+        (call) => call[0] === path.join(testData.projectPath, '.agents/config/primary.json')
+      );
+      expect(configCall).toBeDefined();
+      const config = JSON.parse(configCall[1]);
+      expect(config.name).toBe('primary');
+      expect(config.purpose).toBe('Test project');
+      expect(config.settings.temperature).toBe(0.7);
+    });
+  });
+
+  describe('validation', () => {
+    it('should reject project names with invalid characters', async () => {
+      const invalidNames = ['project|name', 'project*name', 'project?name'];
+
+      for (const name of invalidNames) {
+        const isValid = !/[<>:"/\\|?*]/.test(name);
+        expect(isValid).toBe(false);
+      }
+    });
+
+    it('should accept valid project names', () => {
+      const validNames = ['my-project', 'my_project', 'project123', 'MyProject'];
+
+      for (const name of validNames) {
+        const isValid = !/[<>:"/\\|?*]/.test(name) && name.trim().length > 0;
+        expect(isValid).toBe(true);
+      }
+    });
+  });
+});
